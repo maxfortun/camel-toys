@@ -58,13 +58,21 @@ public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 			.filter(entry -> {
 
 				String key = entry.getKey();
+				if(null == key) {
+					logger.trace("Null key.");
+					return false;
+				}
+
+				Object value = entry.getValue();
+				if(null == value) {
+					logger.trace("Null value for key {}.", key);
+					return false;
+				}
 
 				if(null != keyFilterPattern && key.matches(keyFilterPattern)) {
 					logger.trace("{} matches keyFilterPattern {}.", key, keyFilterPattern);
 					return false;
 				}
-
-				Object value = entry.getValue();
 
 				if(null != valueTypeFilterPattern) {
 					String valueType = value.getClass().getName();
