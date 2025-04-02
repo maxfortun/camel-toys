@@ -1,4 +1,4 @@
-package org.apache.camel.support.processor;
+package net.maxf.apache.camel;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import java.util.regex.Pattern;
 
 import org.apache.camel.Exchange;
+
+import org.apache.camel.support.processor.DefaultExchangeFormatter;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
