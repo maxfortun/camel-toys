@@ -1,0 +1,32 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+	">
+
+	
+	<camelContext xmlns="http://camel.apache.org/schema/spring">
+
+		<route>
+			<from uri="direct:reply_${NODE_ID}" />
+			<method ref="syncAsyncBridge" method="notifyOfReply" />
+		</route>
+			
+		<route>
+			<from uri="jetty:http://0.0.0.0:3101/" />
+			<method ref="syncAsyncBridge" method="queueForReply" />
+			<to uri="direct:start" />
+			<method ref="syncAsyncBridge" method="waitForReply" />
+		</route>
+
+		<route>
+			<from uri="direct:start" />
+			<setBody>Hello world!</setBody>
+			<to uri="${header.reply-to}" />
+		</route>
+
+
+	</camelContext>
+
+</beans>
