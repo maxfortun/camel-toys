@@ -12,6 +12,8 @@ import org.apache.logging.log4j.LogManager;
 public class SyncAsyncGateway {
 	private static final Logger logger = LogManager.getLogger(SyncAsyncGateway.class);
 
+	private ExchangeFormatter exchangeFormatter = null;
+
 	private Map<String, Exchange> requests = new HashMap<>();
 	private String replyToHeader = "reply-to";
 	private String replyIdHeader = "reply-id";
@@ -54,6 +56,26 @@ public class SyncAsyncGateway {
 		return timeout;
 	}
 
+	public void setExchangeFormatter(ExchangeFormatter exchangeFormatter) {
+		this.exchangeFormatter = exchangeFormatter;
+	}
+
+	public ExchangeFormatter getExchangeFormatter(Exchange exchange) {
+		if(null != exchangeFormatter) {
+			return exchangeFormatter;
+		}
+
+		synchronized(this) {
+			if(null != exchangeFormatter) {
+				return exchangeFormatter;
+			}
+
+			exchangeFormatter = exchange.getContext().getRegistry().lookupByNameAndType("logFormatter", ExchangeFormatter.class);
+		}
+
+		return exchangeFormatter;
+	}
+
 	public void queueForReply(Exchange request) {
 		logger.debug("queueForReply request: "+request.getExchangeId());
 		request.getIn().setHeader(replyToHeader, replyTo);
@@ -73,8 +95,7 @@ public class SyncAsyncGateway {
 			}
 		}
 
-		ExchangeFormatter exchangeFormatter = request.getContext().getRegistry().lookupByNameAndType("logFormatter", ExchangeFormatter.class);
-		logger.debug("waitForReply request after wait: "+exchangeFormatter.format(request));
+		logger.debug("waitForReply request after wait: "+getExchangeFormatter(request).format(request));
 
 		synchronized(requests) {
 			requests.remove(request.getExchangeId());
@@ -110,8 +131,7 @@ public class SyncAsyncGateway {
 			request.getOut().setBody(response.getIn().getBody());
 			request.getOut().setHeaders(response.getIn().getHeaders());
 			request.getOut().removeHeader(replyToHeader);
-			ExchangeFormatter exchangeFormatter = request.getContext().getRegistry().lookupByNameAndType("logFormatter", ExchangeFormatter.class);
-			logger.debug("notifyOfReply request: "+exchangeFormatter.format(request));
+			logger.debug("notifyOfReply request: "+getExchangeFormatter(request).format(request));
 			request.notifyAll();
 		}
 	}
