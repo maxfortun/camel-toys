@@ -101,7 +101,7 @@ public class SyncAsyncGateway {
 			requests.remove(request.getExchangeId());
 		}
 
-		if(null == request.getIn().getHeader(replyToHeader)) {
+		if(null != request.getIn().getHeader(replyToHeader)) {
 			logger.debug("Timed out waiting for reply. "+request.getExchangeId()+" still has "+replyToHeader+"="+request.getIn().getHeader(replyToHeader));
 			request.getIn().removeHeader(replyToHeader);
 			request.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, "504");
