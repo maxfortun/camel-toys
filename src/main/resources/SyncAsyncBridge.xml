@@ -12,7 +12,7 @@
 	<camelContext xmlns="http://camel.apache.org/schema/spring" trace="true">
 
 		<route>
-			<from uri="direct:reply_${NODE_ID}" />
+			<from uri="direct:reply_${env:NODE_ID}" />
 			<bean ref="syncAsyncBridge" method="notifyOfReply"/>
 		</route>
 			
