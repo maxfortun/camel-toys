@@ -17,8 +17,27 @@ public class SyncAsyncGateway {
 	private String replyTo = null;
 	private Long timeout = 0l;
 
+	public void setReplyToHeader(String replyToHeader) {
+		this.replyToHeader = replyToHeader;
+		logger.info("replyToHeader: "+this.replyToHeader);
+	}
+
+	public String getReplyToHeader() {
+		return replyToHeader;
+	}
+
+	public void setReplyIdHeader(String replyIdHeader) {
+		this.replyIdHeader = replyIdHeader;
+		logger.info("replyIdHeader: "+this.replyIdHeader);
+	}
+
+	public String getReplyIdHeader() {
+		return replyIdHeader;
+	}
+
 	public void setReplyTo(String replyTo) {
 		this.replyTo = replyTo;
+		logger.info("replyTo: "+this.replyTo);
 	}
 
 	public String getReplyTo() {
@@ -27,6 +46,7 @@ public class SyncAsyncGateway {
 
 	public void setTimeout(Long timeout) {
 		this.timeout = timeout;
+		logger.info("timeout: "+this.timeout);
 	}
 
 	public Long getTimeout() {
@@ -49,16 +69,23 @@ public class SyncAsyncGateway {
 			try {
 				request.wait(timeout);
 			} catch(InterruptedException e) {
-				logger.debug("waitForReply wait() interrupted.", e);
-				request.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, "504");
-				request.getOut().setHeader(Exchange.CONTENT_TYPE, "text/plain");
-				request.getOut().setBody("SyncAsync Gateway Timeout");
+				logger.debug("waitForReply wait("+timeout+") interrupted.", e);
 			}
 		}
 
 		synchronized(requests) {
 			requests.remove(request.getExchangeId());
 		}
+
+		if(null != request.getOut().getHeader(replyToHeader)) {
+			logger.debug("Timed out waiting for reply. "+request.getExchangeId());
+			request.getOut().removeHeader(replyToHeader);
+			request.getOut().removeHeader(replyIdHeader);
+			request.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, "504");
+			request.getOut().setHeader(Exchange.CONTENT_TYPE, "text/plain");
+			request.getOut().setBody("SyncAsync Gateway Timeout");
+		}
+
 	}
 
 	public void notifyOfReply(Exchange response) {
@@ -77,7 +104,7 @@ public class SyncAsyncGateway {
 
 		logger.debug("notifyOfReply request: "+requestId);
 		request.getOut().setBody(response.getIn().getBody());
-        request.getOut().setHeaders(response.getIn().getHeaders());
+		request.getOut().setHeaders(response.getIn().getHeaders());
 		request.getOut().removeHeader(replyToHeader);
 		request.getOut().removeHeader(replyIdHeader);
 		synchronized(request) {
