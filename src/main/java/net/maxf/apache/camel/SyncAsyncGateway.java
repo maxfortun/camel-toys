@@ -15,7 +15,7 @@ public class SyncAsyncGateway {
 	private String replyToHeader = "reply-to";
 	private String replyIdHeader = "reply-id";
 	private String replyTo = null;
-	private Long timeout = 10000l;
+	private Long timeout = 0l;
 
 	public void setReplyTo(String replyTo) {
 		this.replyTo = replyTo;
