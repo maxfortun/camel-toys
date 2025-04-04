@@ -32,7 +32,7 @@ public class SyncAsyncBridge {
 	}
 
 	public void queueForReply(Exchange request) {
-		logger.debug("Request: "+request.getExchangeId());
+		logger.debug("queueForReply request: "+request.getExchangeId());
 		request.getIn().setHeader("reply-to", replyTo);
 		request.getIn().setHeader("reply-id", request.getExchangeId());
 		synchronized(requests) {
@@ -41,18 +41,23 @@ public class SyncAsyncBridge {
 	}
 
 	public void waitForReply(Exchange request) {
-		logger.debug("Request: "+request.getExchangeId());
+		logger.debug("waitForReply request: "+request.getExchangeId());
+
 		synchronized(request) {
 			try {
 				request.wait(timeout);
 			} catch(InterruptedException e) {
-				logger.debug("wait() interrupted.", e);
+				logger.debug("waitForReply wait() interrupted.", e);
 			}
+		}
+
+		synchronized(requests) {
+			requests.remove(request.getExchangeId());
 		}
 	}
 
 	public void notifyOfReply(Exchange response) {
-		logger.debug("Response: "+response.getExchangeId());
+		logger.debug("notifyOfReply response: "+response.getExchangeId());
 		String requestId = response.getIn().getHeader("reply-id", String.class);
 		
 		Exchange request = null;
@@ -61,11 +66,11 @@ public class SyncAsyncBridge {
 		}
 
 		if(null == request) {
-			logger.debug("Request not found: "+requestId);
+			logger.debug("notifyOfReply request not found: "+requestId);
 			return;
 		}
 
-		logger.debug("Request: "+requestId);
+		logger.debug("notifyOfReply request: "+requestId);
 		request.getOut().setBody(response.getIn().getBody());
         request.getOut().setHeaders(response.getIn().getHeaders());
 		synchronized(request) {

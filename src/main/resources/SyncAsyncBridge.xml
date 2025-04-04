@@ -27,9 +27,15 @@
 
 		<route id="start">
 			<from uri="seda:start" />
+
+			<delay asyncDelayed="true">
+				<constant> 5000 </constant>
+			</delay>
+
 			<setBody>
 				<constant>Hello</constant>
 			</setBody>
+
 			<toD uri="${header.reply-to}" cacheSize="0" />
 		</route>
 
