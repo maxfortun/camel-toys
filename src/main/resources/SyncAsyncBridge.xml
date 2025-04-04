@@ -8,35 +8,26 @@
 >
 
 	<bean id="syncAsyncBridge" class="net.maxf.apache.camel.SyncAsyncBridge">
-		 <property name="replyTo" value="seda:reply_${env:NODE_ID}" />
+		 <property name="replyTo" value="{{env:PRODUCER_REPLY_TO}}" />
 	</bean>
 	
 	<camelContext xmlns="http://camel.apache.org/schema/spring" trace="true">
 
 		<route id="reply">
-			<from uri="seda:reply_${env:NODE_ID}" />
+			<from uri="{{env:CONSUMER_REPLY_TO}}" />
 			<bean ref="syncAsyncBridge" method="notifyOfReply"/>
 		</route>
 			
 		<route id="request">
 			<from uri="jetty:http://0.0.0.0:3101/sync" />
 			<bean ref="syncAsyncBridge" method="queueForReply"/>
-			<to uri="seda:start" />
+			<to uri="{{env:PRODUCER_START}}" />
 			<bean ref="syncAsyncBridge" method="waitForReply"/>
 		</route>
 
-		<route id="start">
-			<from uri="seda:start" />
-
-			<delay asyncDelayed="true">
-				<constant> 5000 </constant>
-			</delay>
-
-			<setBody>
-				<constant>Hello</constant>
-			</setBody>
-
-			<toD uri="${header.reply-to}" cacheSize="0" />
+		<route id="replyTo">
+			<from uri="{{env:CONSUMER_DONE}}" />
+			<toD uri="${header.reply-to}" />
 		</route>
 
 	</camelContext>
