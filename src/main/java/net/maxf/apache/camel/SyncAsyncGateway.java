@@ -8,8 +8,8 @@ import org.apache.camel.Exchange;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-public class SyncAsyncBridge {
-	private static final Logger logger = LogManager.getLogger(SyncAsyncBridge.class);
+public class SyncAsyncGateway {
+	private static final Logger logger = LogManager.getLogger(SyncAsyncGateway.class);
 
 	private Map<String, Exchange> requests = new HashMap<>();
 	private String replyTo = null;

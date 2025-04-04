@@ -7,22 +7,27 @@
 		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd"
 >
 
-	<bean id="syncAsyncBridge" class="net.maxf.apache.camel.SyncAsyncBridge">
-		 <property name="replyTo" value="{{env:PRODUCER_REPLY_TO}}" />
+	<bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="searchSystemEnvironment" value="true" />
+	</bean>
+
+	<bean id="syncAsyncGateway" class="net.maxf.apache.camel.SyncAsyncGateway">
+		 <property name="replyTo" value="${PRODUCER_REPLY_TO}" />
 	</bean>
 	
 	<camelContext xmlns="http://camel.apache.org/schema/spring" trace="true">
 
 		<route id="reply">
 			<from uri="{{env:CONSUMER_REPLY_TO}}" />
-			<bean ref="syncAsyncBridge" method="notifyOfReply"/>
+			<bean ref="syncAsyncGateway" method="notifyOfReply"/>
 		</route>
 			
 		<route id="request">
 			<from uri="jetty:http://0.0.0.0:3101/sync" />
-			<bean ref="syncAsyncBridge" method="queueForReply"/>
+			<bean ref="syncAsyncGateway" method="queueForReply"/>
 			<to uri="{{env:PRODUCER_START}}" />
-			<bean ref="syncAsyncBridge" method="waitForReply"/>
+			<bean ref="syncAsyncGateway" method="waitForReply"/>
 		</route>
 
 		<route id="replyTo">

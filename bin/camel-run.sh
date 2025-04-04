@@ -9,6 +9,6 @@ fi
 
 export NODE_ID=a
 
-java -cp "src/main/resources:target/*:target/dependency/*" \
+java -cp "src/test/resources:src/main/resources:target/*:target/dependency/*" \
 	org.apache.camel.spring.Main \
 	-ac $camelContext

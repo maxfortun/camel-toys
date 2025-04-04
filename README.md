@@ -1,5 +1,10 @@
 # camel-toys
 
+## Build for testing
+```
+mvn clean package dependency:copy-dependencies
+```
+
 ## FilteringExchangeFormatter
 ```
    <bean id="exchangeFormatter" class="com.dowjones.artpub.camel.logging.FilteringExchangeFormatter">
@@ -29,29 +34,50 @@
 
 ## SyncAsyncGateway
 ### Kafka
-Run Kafka. We'll use it to dispatch async work.
+We'll use Kafka to dispatch async work.
+
+Create a network:
 ```
-docker run --rm -p 9092:9092 \
+docker network create kafka
+```
+
+Run Kafka:
+```
+docker run --rm \
+	--network kafka \
+	-p 0.0.0.0:9092:9092 \
 	--env-file src/test/resources/kafka.env \
 	--name kafka apache/kafka
 ```
   
-If it is running on a docker host that is not localhost, override with:
+If it is running on a docker host that is not localhost, override advertised PLAINTEXT listener with your own host:
 ```
-	-e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.1.123:9092
+	-e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.1.123:9092,DOCKER://kafka:9094
 ```
 
 ### Run Kafbat, a Kafka console to observe queued up work.
 ```
-docker run --rm -p 8080:8080 \
+docker run --rm -p 0.0.0.0:8080:8080 \
 	--env-file src/test/resources/kafbat.env \
 	--name kafbat kafbat/kafka-ui
 
 ```
 
-If it is running on a docker host that is not localhost, override with:
-```
-	-e KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=192.168.1.123:9092
-```
+> You can now access Kafka UI either at http://localhost:8080 or http://192.168.1.123:8080, if your docker host is different.
 
 
+### Set environment
+If your docker host is different, set it first:
+```
+export KAFKA_BROKERS=192.168.1.123:9092
+```
+
+Set the SyncAsyncGateway env:
+```
+. bin/setenv-syncasync-kafka.sh 
+```
+
+Run SyncAsyncGateway:
+```
+bin/camel-run.sh SyncAsyncGateway.xml
+```
