@@ -1,28 +1,33 @@
-<beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	   xsi:schemaLocation="
-	   http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-	   http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
-	">
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:camel="http://camel.apache.org/schema/spring"
+	xsi:schemaLocation="
+		http://camel.apache.org/schema/spring https://camel.apache.org/schema/spring/camel-spring.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd"
+>
 
+	<bean id="syncAsyncBridge" class="net.maxf.apache.camel.SyncAsyncBridge" />
 	
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
 
 		<route>
 			<from uri="direct:reply_${NODE_ID}" />
-			<method ref="syncAsyncBridge" method="notifyOfReply" />
+			<bean ref="syncAsyncBridge" method="notifyOfReply"/>
 		</route>
 			
 		<route>
 			<from uri="jetty:http://0.0.0.0:3101/" />
-			<method ref="syncAsyncBridge" method="queueForReply" />
+			<bean ref="syncAsyncBridge" method="queueForReply"/>
 			<to uri="direct:start" />
-			<method ref="syncAsyncBridge" method="waitForReply" />
+			<bean ref="syncAsyncBridge" method="waitForReply"/>
 		</route>
 
 		<route>
 			<from uri="direct:start" />
-			<setBody>Hello world!</setBody>
+			<setBody>
+				<simple>Hello world!</simple>
+			</setBody>
 			<to uri="${header.reply-to}" />
 		</route>
 
