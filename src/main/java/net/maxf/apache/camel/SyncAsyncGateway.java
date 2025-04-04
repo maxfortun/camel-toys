@@ -77,11 +77,11 @@ public class SyncAsyncGateway {
 			requests.remove(request.getExchangeId());
 		}
 
-		if(null != request.getOut().getHeader(replyToHeader)) {
+		if(null == request.getOut().getHeader(replyToHeader)) {
 			logger.debug("Timed out waiting for reply. "+request.getExchangeId());
 			request.getOut().removeHeader(replyToHeader);
-			request.getOut().removeHeader(replyIdHeader);
 			request.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, "504");
+			request.getOut().setHeader(Exchange.HTTP_RESPONSE_TEXT, "SyncAsync Gateway Timeout");
 			request.getOut().setHeader(Exchange.CONTENT_TYPE, "text/plain");
 			request.getOut().setBody("SyncAsync Gateway Timeout");
 		}
@@ -106,7 +106,6 @@ public class SyncAsyncGateway {
 		request.getOut().setBody(response.getIn().getBody());
 		request.getOut().setHeaders(response.getIn().getHeaders());
 		request.getOut().removeHeader(replyToHeader);
-		request.getOut().removeHeader(replyIdHeader);
 		synchronized(request) {
 			request.notify();
 		}
