@@ -28,7 +28,7 @@
 			<setBody>
 				<simple>Hello world!</simple>
 			</setBody>
-			<to uri="${header.reply-to}" />
+			<toD uri="${header.reply-to}" cacheSize="0" />
 		</route>
 
 
