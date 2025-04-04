@@ -40,10 +40,14 @@ public class SyncAsyncBridge {
 		}
 	}
 
-	public void waitForReply(Exchange request) throws InterruptedException {
+	public void waitForReply(Exchange request) {
 		logger.debug("Request: "+request.getExchangeId());
 		synchronized(request) {
-			request.wait(timeout);
+			try {
+				request.wait(timeout);
+			} catch(InterruptedException e) {
+				logger.debug("wait() interrupted.", e);
+			}
 		}
 	}
 
