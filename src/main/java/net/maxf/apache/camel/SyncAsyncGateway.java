@@ -12,6 +12,8 @@ public class SyncAsyncGateway {
 	private static final Logger logger = LogManager.getLogger(SyncAsyncGateway.class);
 
 	private Map<String, Exchange> requests = new HashMap<>();
+	private String replyToHeader = "reply-to";
+	private String replyIdHeader = "reply-id";
 	private String replyTo = null;
 	private Long timeout = 10000l;
 
@@ -33,8 +35,8 @@ public class SyncAsyncGateway {
 
 	public void queueForReply(Exchange request) {
 		logger.debug("queueForReply request: "+request.getExchangeId());
-		request.getIn().setHeader("reply-to", replyTo);
-		request.getIn().setHeader("reply-id", request.getExchangeId());
+		request.getIn().setHeader(replyToHeader, replyTo);
+		request.getIn().setHeader(replyIdHeader, request.getExchangeId());
 		synchronized(requests) {
 			requests.put(request.getExchangeId(), request);
 		}
@@ -58,7 +60,7 @@ public class SyncAsyncGateway {
 
 	public void notifyOfReply(Exchange response) {
 		logger.debug("notifyOfReply response: "+response.getExchangeId());
-		String requestId = response.getIn().getHeader("reply-id", String.class);
+		String requestId = response.getIn().getHeader(replyIdHeader, String.class);
 		
 		Exchange request = null;
 		synchronized(requests) {
@@ -73,6 +75,8 @@ public class SyncAsyncGateway {
 		logger.debug("notifyOfReply request: "+requestId);
 		request.getOut().setBody(response.getIn().getBody());
         request.getOut().setHeaders(response.getIn().getHeaders());
+		request.getOut().removeHeader(replyToHeader);
+		request.getOut().removeHeader(replyIdHeader);
 		synchronized(request) {
 			request.notify();
 		}
