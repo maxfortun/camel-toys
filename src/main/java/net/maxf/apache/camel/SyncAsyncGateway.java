@@ -101,13 +101,13 @@ public class SyncAsyncGateway {
 			requests.remove(request.getExchangeId());
 		}
 
-		if(null == request.getOut().getHeader(replyToHeader)) {
-			logger.debug("Timed out waiting for reply. "+request.getExchangeId());
-			request.getOut().removeHeader(replyToHeader);
-			request.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, "504");
-			request.getOut().setHeader(Exchange.HTTP_RESPONSE_TEXT, "SyncAsync Gateway Timeout");
-			request.getOut().setHeader(Exchange.CONTENT_TYPE, "text/plain");
-			request.getOut().setBody("SyncAsync Gateway Timeout");
+		if(null == request.getIn().getHeader(replyToHeader)) {
+			logger.debug("Timed out waiting for reply. "+request.getExchangeId()+" still has "+replyToHeader+"="+request.getIn().getHeader(replyToHeader));
+			request.getIn().removeHeader(replyToHeader);
+			request.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, "504");
+			request.getIn().setHeader(Exchange.HTTP_RESPONSE_TEXT, "SyncAsync Gateway Timeout");
+			request.getIn().setHeader(Exchange.CONTENT_TYPE, "text/plain");
+			request.getIn().setBody("SyncAsync Gateway Timeout");
 		}
 
 	}
@@ -128,9 +128,10 @@ public class SyncAsyncGateway {
 
 		synchronized(request) {
 			logger.debug("notifyOfReply request: "+requestId);
-			request.getOut().setBody(response.getIn().getBody());
-			request.getOut().setHeaders(response.getIn().getHeaders());
-			request.getOut().removeHeader(replyToHeader);
+			request.getIn().setBody(response.getIn().getBody());
+			request.getIn().setHeaders(response.getIn().getHeaders());
+			request.getIn().removeHeader(replyToHeader);
+			request.getIn().removeHeader(replyToHeader);
 			logger.debug("notifyOfReply request: "+getExchangeFormatter(request).format(request));
 			request.notifyAll();
 		}
