@@ -55,6 +55,7 @@ public class SyncAsyncBridge {
 		synchronized(requests) {
 			request = requests.get(requestId);
 		}
+
 		if(null == request) {
 			logger.debug("Request not found: "+requestId);
 			return;
