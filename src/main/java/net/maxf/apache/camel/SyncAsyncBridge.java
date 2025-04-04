@@ -35,7 +35,7 @@ public class SyncAsyncBridge {
 		logger.debug("Request: "+request.getExchangeId());
 		request.getIn().setHeader("reply-to", replyTo);
 		request.getIn().setHeader("reply-id", request.getExchangeId());
-		synchronized(request) {
+		synchronized(requests) {
 			requests.put(request.getExchangeId(), request);
 		}
 	}
@@ -51,7 +51,10 @@ public class SyncAsyncBridge {
 		logger.debug("Response: "+response.getExchangeId());
 		String requestId = response.getIn().getHeader("reply-id", String.class);
 		
-		Exchange request = requests.get(requestId);
+		Exchange request = null;
+		synchronized(requests) {
+			request = requests.get(requestId);
+		}
 		if(null == request) {
 			logger.debug("Request not found: "+requestId);
 			return;
@@ -60,6 +63,9 @@ public class SyncAsyncBridge {
 		logger.debug("Request: "+requestId);
 		request.getOut().setBody(response.getIn().getBody());
         request.getOut().setHeaders(response.getIn().getHeaders());
+		synchronized(request) {
+			request.notify();
+		}
 	}
 }
 
