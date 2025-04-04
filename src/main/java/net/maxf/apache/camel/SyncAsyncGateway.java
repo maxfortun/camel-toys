@@ -4,12 +4,15 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.support.processor.DefaultExchangeFormatter;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 public class SyncAsyncGateway {
 	private static final Logger logger = LogManager.getLogger(SyncAsyncGateway.class);
+	private static DefaultExchangeFormatter exchangeFormatter = new DefaultExchangeFormatter();
+
 
 	private Map<String, Exchange> requests = new HashMap<>();
 	private String replyToHeader = "reply-to";
@@ -63,15 +66,16 @@ public class SyncAsyncGateway {
 	}
 
 	public void waitForReply(Exchange request) {
-		logger.debug("waitForReply request: "+request.getExchangeId());
-
 		synchronized(request) {
+			logger.debug("waitForReply request: "+request.getExchangeId());
 			try {
 				request.wait(timeout);
 			} catch(InterruptedException e) {
 				logger.debug("waitForReply wait("+timeout+") interrupted.", e);
 			}
 		}
+
+		logger.debug("waitForReply request after wait: "+exchangeFormatter.format(request));
 
 		synchronized(requests) {
 			requests.remove(request.getExchangeId());
@@ -102,12 +106,13 @@ public class SyncAsyncGateway {
 			return;
 		}
 
-		logger.debug("notifyOfReply request: "+requestId);
-		request.getOut().setBody(response.getIn().getBody());
-		request.getOut().setHeaders(response.getIn().getHeaders());
-		request.getOut().removeHeader(replyToHeader);
 		synchronized(request) {
-			request.notify();
+			logger.debug("notifyOfReply request: "+requestId);
+			request.getOut().setBody(response.getIn().getBody());
+			request.getOut().setHeaders(response.getIn().getHeaders());
+			request.getOut().removeHeader(replyToHeader);
+			logger.debug("notifyOfReply request: "+exchangeFormatter.format(request));
+			request.notifyAll();
 		}
 	}
 }
