@@ -8,13 +8,13 @@
 >
 
 	<bean id="syncAsyncBridge" class="net.maxf.apache.camel.SyncAsyncBridge">
-		 <property name="replyTo" value="{{env:REPLY_TO}}?{{env:PRODUCER_OPTS}}" />
+		 <property name="replyTo" value="{{env:PRODUCER_REPLY_TO}}" />
 	</bean>
 	
 	<camelContext xmlns="http://camel.apache.org/schema/spring" trace="true">
 
 		<route id="reply">
-			<from uri="{{env:REPLY_TO}}?{{env:CONSUMER_OPTS}}" />
+			<from uri="{{env:CONSUMER_REPLY_TO}}" />
 			<bean ref="syncAsyncBridge" method="notifyOfReply"/>
 		</route>
 			
@@ -26,7 +26,7 @@
 		</route>
 
 		<route id="replyTo">
-			<from uri="{{env:DONE}}?{{env:CONSUMER_OPTS}}" />
+			<from uri="{{env:CONSUMER_DONE}}" />
 			<toD uri="${header.reply-to}" />
 		</route>
 

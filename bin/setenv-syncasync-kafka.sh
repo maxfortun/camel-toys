@@ -1,9 +1,11 @@
 
 export KAFKA_BROKERS=${KAFKA_BROKERS:-localhost:9092}
 
-export PRODUCER_OPTS="brokers=$KAFKA_BROKERS"
-export CONSUMER_OPTS="brokers=$KAFKA_BROKERS"
+export PRODUCER_START="kafka:syncAsyncGate-start?brokers=$KAFKA_BROKERS"
+export CONSUMER_START="kafka:syncAsyncGate-start?brokers=$KAFKA_BROKERS"
 
-export START="kafka:syncAsyncGate-start"
-export DONE="kafka:syncAsyncGate-done"
-export REPLY_TO="kafka:syncAsyncGate-replyTo"
+export PRODUCER_DONE="kafka:syncAsyncGate-done?brokers=$KAFKA_BROKERS"
+export CONSUMER_DONE="kafka:syncAsyncGate-done?brokers=$KAFKA_BROKERS"
+
+export PRODUCER_REPLY_TO="kafka:syncAsyncGate-replyTo?brokers=$KAFKA_BROKERS"
+export CONSUMER_REPLY_TO="kafka:syncAsyncGate-replyTo?brokers=$KAFKA_BROKERS"
