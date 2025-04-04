@@ -50,6 +50,9 @@ public class SyncAsyncGateway {
 				request.wait(timeout);
 			} catch(InterruptedException e) {
 				logger.debug("waitForReply wait() interrupted.", e);
+				request.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, "504");
+				request.getOut().setHeader(Exchange.CONTENT_TYPE, "text/plain");
+				request.getOut().setBody("SyncAsync Gateway Timeout");
 			}
 		}
 

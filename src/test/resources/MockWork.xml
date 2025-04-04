@@ -17,13 +17,12 @@
 		<route id="work">
 			<from uri="{{env:CONSUMER_START}}" />
 			<setHeader name="MockWork-Delay">
-				<simple>${random(0,10000)}</simple>
+				<simple resultType="String">${random(0,11000)}</simple>
 			</setHeader>
 			<delay><simple>${header.MockWork-Delay}</simple></delay>
 			<setBody>
-				<simple>
-MockWork delayed for ${header.MockWork-Delay}!
-				</simple>
+				<simple trim="false">MockWork delayed for ${header.MockWork-Delay}!
+</simple>
 			</setBody>
 			<to uri="{{env:PRODUCER_DONE}}" />
 		</route>
