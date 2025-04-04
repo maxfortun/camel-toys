@@ -9,7 +9,7 @@
 
 	<bean id="syncAsyncBridge" class="net.maxf.apache.camel.SyncAsyncBridge" />
 	
-	<camelContext xmlns="http://camel.apache.org/schema/spring">
+	<camelContext xmlns="http://camel.apache.org/schema/spring" trace="true">
 
 		<route>
 			<from uri="direct:reply_${NODE_ID}" />
