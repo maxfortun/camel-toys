@@ -11,19 +11,19 @@
 	
 	<camelContext xmlns="http://camel.apache.org/schema/spring" trace="true">
 
-		<route>
+		<route id="reply">
 			<from uri="direct:reply_${env:NODE_ID}" />
 			<bean ref="syncAsyncBridge" method="notifyOfReply"/>
 		</route>
 			
-		<route>
-			<from uri="jetty:http://0.0.0.0:3101/" />
+		<route id="request">
+			<from uri="jetty:http://0.0.0.0:3101/sync" />
 			<bean ref="syncAsyncBridge" method="queueForReply"/>
 			<to uri="direct:start" />
 			<bean ref="syncAsyncBridge" method="waitForReply"/>
 		</route>
 
-		<route>
+		<route id="start">
 			<from uri="direct:start" />
 			<setBody>
 				<simple>Hello world!</simple>
