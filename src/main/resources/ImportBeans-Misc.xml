@@ -1,0 +1,32 @@
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:camel="http://camel.apache.org/schema/spring"
+	xsi:schemaLocation="
+		http://camel.apache.org/schema/spring https://camel.apache.org/schema/spring/camel-spring.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd"
+>
+
+	<bean id="exchangeFormatter" class="org.apache.camel.support.processor.DefaultExchangeFormatter">
+		<property name="showExchangeId" value="true" />
+		<property name="showProperties" value="true" />
+		<property name="showAllProperties" value="true" />
+		<property name="showHeaders" value="true" />
+		<property name="showBodyType" value="true" />
+		<property name="showBody" value="true" />
+		<property name="showAll" value="true" />
+		<property name="showException" value="true" />
+		<property name="showStackTrace" value="true" />
+		<property name="showCaughtException" value="true" />
+		<property name="showFuture" value="true" />
+		<property name="showExchangePattern" value="true" />
+		<property name="showCachedStreams" value="true" />
+		<property name="showStreams" value="true" />
+		<property name="showFiles" value="true" />
+	</bean>
+
+	<bean id="tracer" class="org.apache.camel.impl.engine.DefaultTracer">
+		<property name="exchangeFormatter" ref="exchangeFormatter" />
+	</bean>
+
+</beans>
