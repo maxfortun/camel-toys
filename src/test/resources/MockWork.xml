@@ -1,0 +1,31 @@
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:camel="http://camel.apache.org/schema/spring"
+	xsi:schemaLocation="
+		http://camel.apache.org/schema/spring https://camel.apache.org/schema/spring/camel-spring.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd"
+>
+
+	<bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="searchSystemEnvironment" value="true" />
+	</bean>
+
+	<camelContext xmlns="http://camel.apache.org/schema/spring" trace="true">
+
+		<route id="work">
+			<from uri="{{env:CONSUMER_START}}" />
+			<delay><constant>2000</constant></delay>
+			<setHeader name="MockWork-Status">
+				<simple>done</simple>
+			</setHeader>
+			<setBody>
+				<simple>MockWork done!</simple>
+			</setBody>
+			<to uri="{{env:PRODUCER_DONE}}" />
+		</route>
+
+	</camelContext>
+
+</beans>

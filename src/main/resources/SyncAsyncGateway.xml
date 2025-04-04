@@ -12,6 +12,8 @@
 		<property name="searchSystemEnvironment" value="true" />
 	</bean>
 
+	<import resource="classpath:ImportBeans-${IMPORT_BEANS}.xml" />
+
     <bean id="headerFilterStrategy" class="org.apache.camel.support.DefaultHeaderFilterStrategy">
         <property name="outFilterPattern" value="(?i)^(kafka[.]).*$"/>
     </bean>
