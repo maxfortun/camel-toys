@@ -13,6 +13,7 @@ public class SyncAsyncBridge {
 
 	private Map<String, Exchange> requests = new HashMap<>();
 	private String replyTo = null;
+	private Long timeout = 10000l;
 
 	public void setReplyTo(String replyTo) {
 		this.replyTo = replyTo;
@@ -20,6 +21,14 @@ public class SyncAsyncBridge {
 
 	public String getReplyTo() {
 		return replyTo;
+	}
+
+	public void setTimeout(Long timeout) {
+		this.timeout = timeout;
+	}
+
+	public Long getTimeout() {
+		return timeout;
 	}
 
 	public void queueForReply(Exchange request) {
@@ -31,7 +40,7 @@ public class SyncAsyncBridge {
 		}
 	}
 
-	public void waitForReply(Exchange request, long timeout) throws InterruptedException {
+	public void waitForReply(Exchange request) throws InterruptedException {
 		logger.debug("Request: "+request.getExchangeId());
 		synchronized(request) {
 			request.wait(timeout);

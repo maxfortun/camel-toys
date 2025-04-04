@@ -27,9 +27,11 @@
 
 		<route id="start">
 			<from uri="seda:start" />
+			<setBody>
+				<constant>Hello</constant>
+			</setBody>
 			<toD uri="${header.reply-to}" cacheSize="0" />
 		</route>
-
 
 	</camelContext>
 
