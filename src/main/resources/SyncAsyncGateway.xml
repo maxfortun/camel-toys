@@ -12,6 +12,10 @@
 		<property name="searchSystemEnvironment" value="true" />
 	</bean>
 
+    <bean id="headerFilterStrategy" class="org.apache.camel.support.DefaultHeaderFilterStrategy">
+        <property name="outFilterPattern" value="(?i)^(kafka[.]).*$"/>
+    </bean>
+
 	<bean id="syncAsyncGateway" class="net.maxf.apache.camel.SyncAsyncGateway">
 		 <property name="replyTo" value="${PRODUCER_REPLY_TO}" />
 	</bean>
@@ -24,7 +28,7 @@
 		</route>
 			
 		<route id="request">
-			<from uri="jetty:http://0.0.0.0:3101/sync" />
+			<from uri="jetty:http://0.0.0.0:3101/sync?headerFilterStrategy=#headerFilterStrategy" />
 			<bean ref="syncAsyncGateway" method="queueForReply"/>
 			<to uri="{{env:PRODUCER_START}}" />
 			<bean ref="syncAsyncGateway" method="waitForReply"/>
