@@ -4,15 +4,13 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.support.processor.DefaultExchangeFormatter;
+import org.apache.camel.spi.ExchangeFormatter;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 public class SyncAsyncGateway {
 	private static final Logger logger = LogManager.getLogger(SyncAsyncGateway.class);
-	private static DefaultExchangeFormatter exchangeFormatter = new DefaultExchangeFormatter();
-
 
 	private Map<String, Exchange> requests = new HashMap<>();
 	private String replyToHeader = "reply-to";
@@ -75,6 +73,7 @@ public class SyncAsyncGateway {
 			}
 		}
 
+		ExchangeFormatter exchangeFormatter = request.getContext().getRegistry().lookupByNameAndType("logFormatter", ExchangeFormatter.class);
 		logger.debug("waitForReply request after wait: "+exchangeFormatter.format(request));
 
 		synchronized(requests) {
@@ -111,6 +110,7 @@ public class SyncAsyncGateway {
 			request.getOut().setBody(response.getIn().getBody());
 			request.getOut().setHeaders(response.getIn().getHeaders());
 			request.getOut().removeHeader(replyToHeader);
+			ExchangeFormatter exchangeFormatter = request.getContext().getRegistry().lookupByNameAndType("logFormatter", ExchangeFormatter.class);
 			logger.debug("notifyOfReply request: "+exchangeFormatter.format(request));
 			request.notifyAll();
 		}

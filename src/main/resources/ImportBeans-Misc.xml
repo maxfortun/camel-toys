@@ -7,7 +7,7 @@
 		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd"
 >
 
-	<bean id="exchangeFormatter" class="org.apache.camel.support.processor.DefaultExchangeFormatter">
+	<bean id="logFormatter" class="org.apache.camel.support.processor.DefaultExchangeFormatter">
 		<property name="showExchangeId" value="true" />
 		<property name="showProperties" value="true" />
 		<property name="showAllProperties" value="true" />
@@ -23,10 +23,6 @@
 		<property name="showCachedStreams" value="true" />
 		<property name="showStreams" value="true" />
 		<property name="showFiles" value="true" />
-	</bean>
-
-	<bean id="tracer" class="org.apache.camel.impl.engine.DefaultTracer">
-		<property name="exchangeFormatter" ref="exchangeFormatter" />
 	</bean>
 
 </beans>
