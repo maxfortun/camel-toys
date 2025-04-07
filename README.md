@@ -81,3 +81,14 @@ Run SyncAsyncGateway:
 ```
 bin/camel-run.sh SyncAsyncGateway.xml
 ```
+
+Run mock work:
+```
+bin/camel-run.sh MockWork.xml
+```
+
+Run the load test:
+```
+bin/syncasync-test.js 
+```
+
