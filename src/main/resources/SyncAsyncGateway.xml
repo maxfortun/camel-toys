@@ -21,7 +21,7 @@
 
 	<bean id="syncAsyncGateway" class="net.maxf.apache.camel.SyncAsyncGateway">
 		 <property name="replyTo" value="${PRODUCER_REPLY_TO}" />
-		 <property name="timeout" value="3000" />
+		 <property name="timeout" value="10000" />
 	</bean>
 	
 	<camelContext xmlns="http://camel.apache.org/schema/spring" trace="true">
