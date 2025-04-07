@@ -15,6 +15,7 @@ const instance = autocannon({
 		method: 'POST',
 		setupRequest: (req, context) => {
 			req.path = `${req.path}?req-id=${reqId++}`;
+			// console.log('setupRequest:', req);
     		return req;
 		},
 		onResponse: (status, body, context, headers) => {

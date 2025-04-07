@@ -92,18 +92,20 @@ public class SyncAsyncGateway {
 			try {
 				request.wait(timeout);
 			} catch(InterruptedException e) {
-				logger.debug("waitForReply wait("+timeout+") interrupted.", e);
+				logger.debug("waitForReply wait("+timeout+") interrupted: "+request.getExchangeId(), e);
 			}
 		}
 
-		logger.debug("waitForReply request after wait: "+getExchangeFormatter(request).format(request));
+		logger.debug("waitForReply request after wait: "+request.getExchangeId());
+		logger.trace("waitForReply request after wait: "+request.getExchangeId()+" "+getExchangeFormatter(request).format(request));
 
 		synchronized(requests) {
 			requests.remove(request.getExchangeId());
 		}
 
 		if(null != request.getIn().getHeader(replyToHeader)) {
-			logger.debug("Timed out waiting for reply. "+request.getExchangeId()+" still has "+replyToHeader+"="+request.getIn().getHeader(replyToHeader));
+			logger.debug("waitForReply timed out waiting for reply: "+request.getExchangeId());
+
 			String message = "SyncAsync Gateway Timeout";
 			String requestId = request.getIn().getHeader(requestIdHeader, String.class);
 			if(null != requestId) {
@@ -139,7 +141,7 @@ public class SyncAsyncGateway {
 			request.getIn().setHeaders(response.getIn().getHeaders());
 			request.getIn().removeHeader(replyToHeader);
 			request.getIn().removeHeader(replyToHeader);
-			logger.debug("notifyOfReply request: "+getExchangeFormatter(request).format(request));
+			logger.trace("notifyOfReply request: "+getExchangeFormatter(request).format(request));
 			request.notifyAll();
 		}
 	}
