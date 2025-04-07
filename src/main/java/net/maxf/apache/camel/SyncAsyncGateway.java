@@ -15,6 +15,7 @@ public class SyncAsyncGateway {
 	private ExchangeFormatter exchangeFormatter = null;
 
 	private Map<String, Exchange> requests = new HashMap<>();
+	private String requestIdHeader = "req-id";
 	private String replyToHeader = "reply-to";
 	private String replyIdHeader = "reply-id";
 	private String replyTo = null;
@@ -103,11 +104,17 @@ public class SyncAsyncGateway {
 
 		if(null != request.getIn().getHeader(replyToHeader)) {
 			logger.debug("Timed out waiting for reply. "+request.getExchangeId()+" still has "+replyToHeader+"="+request.getIn().getHeader(replyToHeader));
+			String message = "SyncAsync Gateway Timeout";
+			String requestId = request.getIn().getHeader(requestIdHeader, String.class);
+			if(null != requestId) {
+				message+=" ("+requestId+")";
+			}
+ 
 			request.getIn().removeHeader(replyToHeader);
 			request.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, "504");
-			request.getIn().setHeader(Exchange.HTTP_RESPONSE_TEXT, "SyncAsync Gateway Timeout");
+			request.getIn().setHeader(Exchange.HTTP_RESPONSE_TEXT, message);
 			request.getIn().setHeader(Exchange.CONTENT_TYPE, "text/plain");
-			request.getIn().setBody("SyncAsync Gateway Timeout");
+			request.getIn().setBody(message);
 		}
 
 	}

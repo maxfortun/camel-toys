@@ -21,7 +21,7 @@
 			</setHeader>
 			<delay><simple>${header.MockWork-Delay}</simple></delay>
 			<setBody>
-				<simple>MockWork delayed for ${header.MockWork-Delay}.</simple>
+				<simple>MockWork delayed ${header.reqId} for ${header.MockWork-Delay}.</simple>
 			</setBody>
 			<to uri="{{env:PRODUCER_DONE}}" />
 		</route>

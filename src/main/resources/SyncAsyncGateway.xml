@@ -32,7 +32,7 @@
 		</route>
 			
 		<route id="request">
-			<from uri="jetty:http://0.0.0.0:3101/sync?headerFilterStrategy=#headerFilterStrategy" />
+			<from uri="jetty:http://0.0.0.0:3101/sync?minThreads=10&amp;maxThreads=100&amp;headerFilterStrategy=#headerFilterStrategy" />
 			<bean ref="syncAsyncGateway" method="queueForReply"/>
 			<to uri="{{env:PRODUCER_START}}" />
 			<bean ref="syncAsyncGateway" method="waitForReply"/>
