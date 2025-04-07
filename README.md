@@ -33,7 +33,7 @@ mvn clean package dependency:copy-dependencies
 ```
 
 ## SyncAsyncGateway
-Here is a use case, we need to perform a multiple time consuming tasks on a single request.   
+Here is a use case, we need to perform multiple tasks on a single request.   
 
 The easiest way to code it is:  
 ```
@@ -43,16 +43,16 @@ Request -> Service
                    -> Task 3
 Response <- Service
 ```
-The problem with this is that tasks happen sequentially one after another and take time of all tasks (Time of Task 1 + Time of Task 2 + Time of Task 3). 
+The problem with this is approach is that tasks happen sequentially, one after another, and take time of all the tasks combined. (Time of Task 1 + Time of Task 2 + Time of Task 3) 
 
-The efficient way to code it so that tasks all happen at the same time. Then the time the request takes is the time of a single longest running task. The way to achieve it:
+The efficient way to code it is so that tasks all happen at the same time and when done get aggregated. With this approach the time the request takes is the time of a single longest running task. The way to achieve it:
 ```
 Request -> Service
                    -> Publish to Task start topic
                    <- Subscribe to Task done topic
 Response <- Service
 ```
-Have multiple subscribers to start topics to do multiple tasks at once, pipe them to aggregator, send aggregated response to response topic.
+Have multiple task specific subscribers to the start topic to do multiple tasks at once, pipe their output to an aggregator, send aggregated response to response topic. Send back the response. Save time.   
 
 This is a generic reference implementation on how to achieve it.
 
