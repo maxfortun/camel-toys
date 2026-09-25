@@ -22,7 +22,7 @@ import org.apache.logging.log4j.LogManager;
 /**
  * ExchangeFormatter with key/value/type filtering of properties, variables and headers.
  *
- * In deltaMode the first trace of an exchange is a full dump; subsequent traces only log properties, variables
+ * In deltaMode (on by default) the first trace of an exchange is a full dump; subsequent traces only log properties, variables
  * and headers that changed or were removed since the previous trace of that exchange, e.g.:
  *   Exchange[Id: X, Changed Headers: {a=2}, Removed Headers: [b]]
  *   Exchange[Id: X, Unchanged]
@@ -44,7 +44,7 @@ public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 	private String keyFilterPattern = null;
 	private String valueFilterPattern = null;
 	private String valueTypeFilterPattern = null;
-	private boolean deltaMode = false;
+	private boolean deltaMode = true;
 	private String snapshotProperty = DEFAULT_SNAPSHOT_PROPERTY;
 	private String lineSeparator = null;
 

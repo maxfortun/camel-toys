@@ -8,7 +8,7 @@ mvn clean package dependency:copy-dependencies
 ## FilteringExchangeFormatter
 A Camel `ExchangeFormatter` for the tracer that can:
 * **Filter** properties, variables and headers by key (`keyFilterPattern`), value (`valueFilterPattern`) or value class name (`valueTypeFilterPattern`). Useful to keep credentials and noise out of logs.
-* **Trace only changes** (`deltaMode`). The first trace of an exchange is a full dump, subsequent ones only list what changed since the previous trace of that exchange:
+* **Trace only changes** (`deltaMode`, on by default; set it to `false` for full dumps on every trace). The first trace of an exchange is a full dump, subsequent ones only list what changed since the previous trace of that exchange:
   ```
   Exchange[Id: X, Changed Headers: {a=2}, Removed Headers: [b]]
   Exchange[Id: X, Unchanged]
@@ -44,6 +44,19 @@ A Camel `ExchangeFormatter` for the tracer that can:
     <bean id="tracer" class="org.apache.camel.impl.engine.DefaultTracer">
         <property name="exchangeFormatter" ref="exchangeFormatter" />
     </bean>
+```
+
+Run the sample route (headers, a variable, a multiline value, a split), full dumps with `DELTA_MODE=false`:
+```
+bin/camel-run.sh FilteringExchangeFormatter.xml
+```
+```
+*--> [sample] [from[timer:sample?repeatCount=1]] Exchange[Id: ...0000, Properties: {}, Headers: {}]
+     [sample] [setVariable[attempt]            ] Exchange[Id: ...0000, Changed Headers: {note=first line | second line}]
+*--> [sample] [from[timer:sample?repeatCount=1]] Exchange[Id: ...0001, From: ...0000, Changed Properties: {CamelSplitIndex=0, ...}]
+     [sample] [setBody[simple{${body.toUpperCa]] Exchange[Id: ...0001, Changed Headers: {item=a}]
+     [sample] [log[Processed ${body}]          ] Exchange[Id: ...0000, Removed Headers: [note]]
+*<-- [sample] [from[timer:sample?repeatCount=1]] Exchange[Id: ...0000, Unchanged]
 ```
 
 ## SyncAsyncGateway
