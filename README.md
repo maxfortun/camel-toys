@@ -6,11 +6,22 @@ mvn clean package dependency:copy-dependencies
 ```
 
 ## FilteringExchangeFormatter
+A Camel `ExchangeFormatter` for the tracer that can:
+* **Filter** properties, variables and headers by key (`keyFilterPattern`), value (`valueFilterPattern`) or value class name (`valueTypeFilterPattern`). Useful to keep credentials and noise out of logs.
+* **Trace only changes** (`deltaMode`). The first trace of an exchange is a full dump, subsequent ones only list what changed since the previous trace of that exchange:
+  ```
+  Exchange[Id: X, Changed Headers: {a=2}, Removed Headers: [b]]
+  Exchange[Id: X, Unchanged]
+  ```
+  Exchanges copied from another (split, multicast, ...) continue from their origin and log `From: <origin id>` instead of a full dump. Exchanges with an exception are always fully dumped. The tracer runs before each node, so a trace shows the changes made by the previous node.
+* **Collapse multiline traces** (`lineSeparator`). Every line break (e.g. in stack traces) is replaced by the given, possibly multicharacter, separator so each trace is a single log line.
+
 ```
-   <bean id="exchangeFormatter" class="com.dowjones.artpub.camel.logging.FilteringExchangeFormatter">
+   <bean id="exchangeFormatter" class="net.maxf.apache.camel.FilteringExchangeFormatter">
         <property name="showExchangeId" value="true" />
         <property name="showProperties" value="true" />
         <property name="showAllProperties" value="true" />
+        <property name="showVariables" value="true" />
         <property name="showHeaders" value="true" />
         <property name="showBodyType" value="true" />
         <property name="showBody" value="true" />
@@ -24,7 +35,9 @@ mvn clean package dependency:copy-dependencies
         <property name="showStreams" value="true" />
         <property name="showFiles" value="true" />
 
-        <property name="keyFilterPattern" value="(?i)^(kafka.HEADERS).*" />
+        <property name="keyFilterPattern" value="(?i)^(kafka.HEADERS.*|.*authorization|cookie|set-cookie)$" />
+        <property name="deltaMode" value="true" />
+        <property name="lineSeparator" value=" | " />
     </bean>
     
     <bean id="tracer" class="org.apache.camel.impl.engine.DefaultTracer">
