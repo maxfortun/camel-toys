@@ -13,7 +13,7 @@ A Camel `ExchangeFormatter` for the tracer that can:
   Exchange[Id: X, Changed Headers: {a=2}, Removed Headers: [b]]
   Exchange[Id: X, Unchanged]
   ```
-  Exchanges copied from another (split, multicast, ...) continue from their origin and log `From: <origin id>` instead of a full dump. Exchanges with an exception are always fully dumped. The tracer runs before each node, so a trace shows the changes made by the previous node.
+  Exchanges copied from another (split, multicast, ...) continue from their origin and log `From: <origin id>` instead of a full dump. Exchanges with an exception are always fully dumped. The tracer runs before each node, so a trace shows the changes made by the previous node. The last traced state is kept in an exchange property named by `snapshotProperty` (default `net.maxf.traceDeltaSnapshot`), which is never traced itself.
 * **Collapse multiline traces** (`lineSeparator`). Every line break (e.g. in stack traces) is replaced by the given, possibly multicharacter, separator so each trace is a single log line.
 
 ```
@@ -37,6 +37,7 @@ A Camel `ExchangeFormatter` for the tracer that can:
 
         <property name="keyFilterPattern" value="(?i)^(kafka.HEADERS.*|.*authorization|cookie|set-cookie)$" />
         <property name="deltaMode" value="true" />
+        <property name="snapshotProperty" value="net.maxf.traceDeltaSnapshot" />
         <property name="lineSeparator" value=" | " />
     </bean>
     

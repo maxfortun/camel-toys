@@ -36,8 +36,8 @@ import org.apache.logging.log4j.LogManager;
 public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 	private static final Logger logger = LogManager.getLogger(FilteringExchangeFormatter.class);
 
-	/** Exchange property holding the last traced state. Never traced itself. */
-	public static final String SNAPSHOT_PROPERTY = "net.maxf.traceDeltaSnapshot";
+	/** Default name of the exchange property holding the last traced state. */
+	public static final String DEFAULT_SNAPSHOT_PROPERTY = "net.maxf.traceDeltaSnapshot";
 
 	private static final Pattern LINE_BREAK = Pattern.compile("\r\n|\r|\n");
 
@@ -45,6 +45,7 @@ public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 	private String valueFilterPattern = null;
 	private String valueTypeFilterPattern = null;
 	private boolean deltaMode = false;
+	private String snapshotProperty = DEFAULT_SNAPSHOT_PROPERTY;
 	private String lineSeparator = null;
 
 	public void setKeyFilterPattern(String keyFilterPattern) {
@@ -79,6 +80,18 @@ public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 		return deltaMode;
 	}
 
+	/** Name of the exchange property holding the last traced state in deltaMode. Never traced itself. */
+	public void setSnapshotProperty(String snapshotProperty) {
+		if(null == snapshotProperty || snapshotProperty.isBlank()) {
+			throw new IllegalArgumentException("snapshotProperty must not be blank");
+		}
+		this.snapshotProperty = snapshotProperty;
+	}
+
+	public String getSnapshotProperty() {
+		return snapshotProperty;
+	}
+
 	/** Replacement for line breaks, may be multicharacter. Null or empty keeps line breaks as they are. */
 	public void setLineSeparator(String lineSeparator) {
 		this.lineSeparator = lineSeparator;
@@ -89,9 +102,9 @@ public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 	}
 
 	protected Map<String, Object> filterHeaderAndProperties(Map<String, Object> map) {
-		if(map.containsKey(SNAPSHOT_PROPERTY)) {
+		if(map.containsKey(snapshotProperty)) {
 			map = new HashMap<>(map);
-			map.remove(SNAPSHOT_PROPERTY);
+			map.remove(snapshotProperty);
 		}
 
 		if(
@@ -161,9 +174,9 @@ public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 			return super.format(exchange);
 		}
 
-		Snapshot previous = exchange.getProperty(SNAPSHOT_PROPERTY, Snapshot.class);
+		Snapshot previous = exchange.getProperty(snapshotProperty, Snapshot.class);
 		Snapshot current  = snapshot(exchange);
-		exchange.setProperty(SNAPSHOT_PROPERTY, current);
+		exchange.setProperty(snapshotProperty, current);
 
 		if(null == previous || null != exchange.getException()) {
 			logger.trace("Full trace of {}.", exchange.getExchangeId());
