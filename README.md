@@ -11,9 +11,9 @@ A Camel `ExchangeFormatter` for the tracer that can:
 * **Trace only changes** (`deltaMode`, on by default; set it to `false` for full dumps on every trace). The first trace of an exchange is a full dump, subsequent ones only list what changed since the previous trace of that exchange:
   ```
   Exchange[Id: X, Changed Headers: {a=2}, Removed Headers: [b]]
-  Exchange[Id: X, Unchanged]
   ```
   Exchanges copied from another (split, multicast, ...) continue from their origin and log `From: <origin id>` instead of a full dump. Exchanges with an exception are always fully dumped. The tracer runs before each node, so a trace shows the changes made by the previous node. The last traced state is kept in an exchange property named by `snapshotProperty` (default `net.maxf.traceDeltaSnapshot`), which is never traced itself.
+* **Skip unchanged traces** (`traceUnchanged`, off by default). With `FilteringTracer`, a trace with no changes since the previous one is not logged at all. Set `traceUnchanged` to `true` to log it as `Exchange[Id: X, Unchanged]`. A plain `DefaultTracer` always logs it.
 * **Collapse multiline traces** (`lineSeparator`). Every line break (e.g. in stack traces) is replaced by the given, possibly multicharacter, separator so each trace is a single log line.
 
 ```
@@ -37,16 +37,17 @@ A Camel `ExchangeFormatter` for the tracer that can:
 
         <property name="keyFilterPattern" value="(?i)^(kafka.HEADERS.*|.*authorization|cookie|set-cookie)$" />
         <property name="deltaMode" value="true" />
+        <property name="traceUnchanged" value="false" />
         <property name="snapshotProperty" value="net.maxf.traceDeltaSnapshot" />
         <property name="lineSeparator" value=" | " />
     </bean>
     
-    <bean id="tracer" class="org.apache.camel.impl.engine.DefaultTracer">
+    <bean id="tracer" class="net.maxf.apache.camel.FilteringTracer">
         <property name="exchangeFormatter" ref="exchangeFormatter" />
     </bean>
 ```
 
-Run the sample route (headers, a variable, a multiline value, a split), full dumps with `DELTA_MODE=false`:
+Run the sample route (headers, a variable, a multiline value, a split). Use `DELTA_MODE=false` for full dumps, `TRACE_UNCHANGED=true` to also log unchanged traces:
 ```
 bin/camel-run.sh FilteringExchangeFormatter.xml
 ```
@@ -56,7 +57,6 @@ bin/camel-run.sh FilteringExchangeFormatter.xml
 *--> [sample] [from[timer:sample?repeatCount=1]] Exchange[Id: ...0001, From: ...0000, Changed Properties: {CamelSplitIndex=0, ...}]
      [sample] [setBody[simple{${body.toUpperCa]] Exchange[Id: ...0001, Changed Headers: {item=a}]
      [sample] [log[Processed ${body}]          ] Exchange[Id: ...0000, Removed Headers: [note]]
-*<-- [sample] [from[timer:sample?repeatCount=1]] Exchange[Id: ...0000, Unchanged]
 ```
 
 ## SyncAsyncGateway

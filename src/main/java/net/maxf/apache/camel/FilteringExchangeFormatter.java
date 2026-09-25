@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
  * The last traced state is kept in an exchange property, so exchanges copied from another one (split,
  * multicast, ...) start from the state of their origin and log "From: <origin id>" instead of a full dump.
  * Exchanges with an exception are always fully dumped.
+ * Unchanged traces are not logged when used with FilteringTracer, unless traceUnchanged is set.
  *
  * With a lineSeparator set, every line break in the output (e.g. stack traces, multiline values) is replaced
  * by it, so each trace is a single log line.
@@ -45,8 +46,12 @@ public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 	private String valueFilterPattern = null;
 	private String valueTypeFilterPattern = null;
 	private boolean deltaMode = true;
+	private boolean traceUnchanged = false;
 	private String snapshotProperty = DEFAULT_SNAPSHOT_PROPERTY;
 	private String lineSeparator = null;
+
+	// Set when the last trace formatted on this thread should not be logged, see FilteringTracer.
+	private final ThreadLocal<Boolean> skipTrace = ThreadLocal.withInitial(() -> false);
 
 	public void setKeyFilterPattern(String keyFilterPattern) {
 		this.keyFilterPattern = keyFilterPattern;
@@ -78,6 +83,24 @@ public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 
 	public boolean isDeltaMode() {
 		return deltaMode;
+	}
+
+	/** Whether deltaMode traces with no changes are logged. Only honoured by FilteringTracer. */
+	public void setTraceUnchanged(boolean traceUnchanged) {
+		this.traceUnchanged = traceUnchanged;
+	}
+
+	public boolean isTraceUnchanged() {
+		return traceUnchanged;
+	}
+
+	/** True, once, if the last trace formatted on this thread should not be logged. */
+	public boolean isTraceSkipped() {
+		if(!skipTrace.get()) {
+			return false;
+		}
+		skipTrace.remove();
+		return true;
 	}
 
 	/** Name of the exchange property holding the last traced state in deltaMode. Never traced itself. */
@@ -162,6 +185,7 @@ public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 
 	@Override
 	public String format(Exchange exchange) {
+		skipTrace.remove();
 		String out = formatTrace(exchange);
 		if(null == lineSeparator || lineSeparator.isEmpty() || null == out) {
 			return out;
@@ -228,6 +252,9 @@ public class FilteringExchangeFormatter extends DefaultExchangeFormatter {
 		appendChanges(sb, "Headers", previous.headers, current.headers);
 		if(sb.length() == length) {
 			sb.append(", Unchanged");
+			if(!traceUnchanged) {
+				skipTrace.set(true);
+			}
 		}
 		sb.append(']');
 

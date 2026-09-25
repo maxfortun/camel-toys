@@ -27,13 +27,16 @@
 		<property name="keyFilterPattern" value="(?i)^(.*authorization|cookie|set-cookie)$" />
 		<!-- Full dump on the first trace of an exchange, only changes after that. On by default, override with -DDELTA_MODE=false -->
 		<property name="deltaMode" value="${DELTA_MODE:true}" />
+		<!-- Log "Unchanged" traces too. Off by default, override with -DTRACE_UNCHANGED=true -->
+		<property name="traceUnchanged" value="${TRACE_UNCHANGED:false}" />
 		<!-- Exchange property holding the last traced state -->
 		<property name="snapshotProperty" value="net.maxf.traceDeltaSnapshot" />
 		<!-- Collapse multiline values and stack traces into a single log line -->
 		<property name="lineSeparator" value=" | " />
 	</bean>
 
-	<bean id="tracer" class="org.apache.camel.impl.engine.DefaultTracer">
+	<!-- FilteringTracer drops traces the formatter skipped, e.g. unchanged ones -->
+	<bean id="tracer" class="net.maxf.apache.camel.FilteringTracer">
 		<property name="exchangeFormatter" ref="exchangeFormatter" />
 	</bean>
 

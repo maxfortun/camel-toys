@@ -113,6 +113,69 @@ public class FilteringExchangeFormatterTest {
 	}
 
 	@Test
+	public void unchangedTraceIsSkippedOnceUnlessTraceUnchanged() {
+		assertFalse(new FilteringExchangeFormatter().isTraceUnchanged());
+		Exchange exchange = new DefaultExchange(context);
+		exchange.getIn().setHeader("a", "1");
+
+		formatter.format(exchange);
+		assertFalse(formatter.isTraceSkipped());
+
+		assertTrue(formatter.format(exchange).endsWith(", Unchanged]"));
+		assertTrue(formatter.isTraceSkipped());
+		assertFalse(formatter.isTraceSkipped());
+
+		exchange.getIn().setHeader("a", "2");
+		formatter.format(exchange);
+		assertFalse(formatter.isTraceSkipped());
+
+		formatter.setTraceUnchanged(true);
+		formatter.format(exchange);
+		assertFalse(formatter.isTraceSkipped());
+	}
+
+	@Test
+	public void filteringTracerDropsUnchangedTraces() throws Exception {
+		List<String> traces = traceRoute();
+		String all = String.join("\n", traces);
+		assertFalse(traces.isEmpty(), all);
+		assertTrue(traces.stream().noneMatch(t -> t.contains("Unchanged")), all);
+		assertTrue(traces.stream().anyMatch(t -> t.contains("Changed Headers: {stage=one}")), all);
+
+		formatter.setTraceUnchanged(true);
+		context = new DefaultCamelContext();
+		List<String> withUnchanged = traceRoute();
+		assertTrue(withUnchanged.stream().anyMatch(t -> t.contains("Unchanged")), String.join("\n", withUnchanged));
+		assertTrue(withUnchanged.size() > traces.size());
+	}
+
+	private List<String> traceRoute() throws Exception {
+		List<String> traces = new ArrayList<>();
+		FilteringTracer tracer = new FilteringTracer() {
+			@Override
+			protected void writeTrace(String out, Object node) {
+				traces.add(out);
+			}
+		};
+		tracer.setExchangeFormatter(formatter);
+		context.setTracing(true);
+		context.setTracer(tracer);
+		context.addRoutes(new RouteBuilder() {
+			@Override
+			public void configure() {
+				from("direct:start").routeId("start")
+					.setHeader("stage", constant("one"))
+					.log("no change")
+					.log("still no change");
+			}
+		});
+		context.start();
+		context.createProducerTemplate().sendBody("direct:start", "x");
+		context.stop();
+		return traces;
+	}
+
+	@Test
 	public void snapshotAndFilteredKeysAreNeverTraced() {
 		Exchange exchange = new DefaultExchange(context);
 		exchange.getIn().setHeader("Authorization", "Bearer secret");
